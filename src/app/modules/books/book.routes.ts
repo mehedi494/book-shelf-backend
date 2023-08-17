@@ -5,6 +5,7 @@ const routes = express.Router();
 
 routes.get('/allbook', bookContoller.getAllbooks);
 routes.post('/add-new', bookContoller.addNewBook);
+routes.patch('/update', bookContoller.updateBook);
 routes.delete('/', bookContoller.deletBook);
 
 export const BooksRoutes = routes;

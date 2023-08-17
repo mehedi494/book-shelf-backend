@@ -4,6 +4,7 @@ import cors from 'cors';
 import { routers } from './app/routes';
 import httpStatus from 'http-status';
 import cookieParser from 'cookie-parser';
+import globalErrorHandler from './app/middleware/globalErrorHandler';
 
 // import { error } from 'winston'
 // import ApiError from './errors/ApiError'
@@ -44,6 +45,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // GlobalError handler
-// app.use(globalErrorHandler);
+app.use(globalErrorHandler);
 
 export default app;

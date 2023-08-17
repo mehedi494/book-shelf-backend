@@ -40,7 +40,7 @@ const addNewBook: RequestHandler = async (req, res, next) => {
 };
 const deletBook: RequestHandler = async (req, res, next) => {
   const id = req.query.id;
-  console.log('params', req.query);
+
   const accesstoken = req?.headers?.authorization;
 
   try {
@@ -58,4 +58,20 @@ const deletBook: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-export const bookContoller = { getAllbooks, addNewBook, deletBook };
+const updateBook: RequestHandler = async (req, res, next) => {
+  const payload = req.body;
+  const accesstoken = req?.headers?.authorization;
+
+  try {
+    const result = await BookService.updateBook(accesstoken as string, payload);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Book updated successfully',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const bookContoller = { getAllbooks, addNewBook, updateBook, deletBook };

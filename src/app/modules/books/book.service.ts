@@ -52,7 +52,7 @@ const getAllbooks = async (
     .limit(limit)
     .sort(sortCondition);
   const total = result.length;
-  console.log(result);
+
   return {
     meta: {
       page,
@@ -70,7 +70,7 @@ const addNewBook = async (accesstoken: string, payload: IBooks) => {
   ) as JwtPayload;
 
   const isUserExist = await User.isUserExist(verifieToken.email);
-  console.log(isUserExist);
+
   if (!isUserExist) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
@@ -87,7 +87,6 @@ const addNewBook = async (accesstoken: string, payload: IBooks) => {
     payload.title &&
     payload.userId
   ) {
-    console.log(payload);
     const result = await Book.create(payload);
     return result;
   } else {
@@ -112,27 +111,66 @@ const deletBook = async (accesstoken: string, id: string) => {
       'unauthorized please log in again'
     );
   }
-  console.log('Bookid', id);
+
   const book = await Book.findById(id);
-  console.log('book', book);
-  console.log('book.userId', book?.userId);
-  console.log('verifieToken', verifieToken);
 
   if (!book?.userId) {
     throw new ApiError(httpStatus.BAD_GATEWAY, 'UserId not found');
   }
 
   if (verifieToken._id !== book?.userId.toString()) {
-    console.log('if book.userId', book?.userId);
-    console.log('if verifieToken', verifieToken._id);
     throw new ApiError(httpStatus.BAD_REQUEST, 'you are unauthorized');
   } else {
     return await Book.deleteOne({ _id: id });
   }
 };
 
+const updateBook = async (accesstoken: string, payload: Partial<IBooks>) => {
+  const verifieToken = jwtHelpers.verifyToken(
+    accesstoken,
+    config.jwt.accessTokon_secret as Secret
+  ) as JwtPayload;
+
+  const isUserExist = await User.isUserExist(verifieToken.email);
+
+  if (!isUserExist) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      'unauthorized please log in again'
+    );
+  }
+
+  const book = await Book.findOne({ _id: payload._id });
+
+  //   console.log('book.userId', book?.userId);
+  //   console.log('verifieToken', verifieToken);
+
+  if (!book?.userId) {
+    throw new ApiError(httpStatus.BAD_GATEWAY, 'UserId not found');
+  }
+
+  if (verifieToken._id !== book?.userId.toString()) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'you are unauthorized');
+  }
+
+  const update = {
+    $set: {
+      title: payload.title,
+      author: payload.author,
+      genre: payload.genre,
+      image: payload.image,
+      publication_date: payload.publication_date,
+    },
+  };
+
+  return await Book.findOneAndUpdate({ _id: payload._id }, update, {
+    new: true,
+  });
+};
+
 export const BookService = {
   getAllbooks,
   addNewBook,
   deletBook,
+  updateBook,
 };

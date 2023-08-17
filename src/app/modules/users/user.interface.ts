@@ -1,10 +1,15 @@
 import { Model } from 'mongoose';
 
 export type IUser = {
-  id?: string;
+  _id?: string;
   name: string;
   email: string;
   role: string;
+  password: string;
+};
+
+export type iLogin = {
+  email: string;
   password: string;
 };
 
@@ -20,8 +25,8 @@ export type IUser = {
 //  statics method interface
 export type IStaticsMethods = {
   isUserExist(
-    id: string
-  ): Promise<Pick<IUser, 'id' | 'role' | 'password'> | null>;
+    email: string
+  ): Promise<Pick<IUser, '_id' | 'email' | 'password' | 'role'> | null>;
 
   isPasswordMatched(
     givenPasword: string,

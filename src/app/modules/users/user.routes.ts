@@ -7,5 +7,6 @@ route.get('/', (req, res) => {
   res.send('testing root route');
 });
 route.post('/create', UserController.createUser);
+route.post('/login', UserController.loginUser);
 
 export const UserRoutes = route;

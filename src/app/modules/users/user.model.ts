@@ -60,11 +60,11 @@ const userSchema = new Schema<IUser, IStaticsMethods>(
 /* ...... statics method.......... */
 
 userSchema.statics.isUserExist = async function (
-  id: string
-): Promise<Partial<Pick<IUser, 'id' | 'password'>> | null> {
+  email: string
+): Promise<Partial<Pick<IUser, 'email' | 'password'>> | null> {
   return await User.findOne(
-    { id },
-    { id: 1, password: 1, role: 1, needsPasswordChange: 1 }
+    { email },
+    { email: 1, id: 1, password: 1, role: 1 }
   );
 };
 userSchema.statics.isPasswordMatched = async function (

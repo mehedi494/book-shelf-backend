@@ -9,9 +9,9 @@ export default {
 
   bcrypt_salt_round: process.env.BCRYPT_SALT_ROUNDS,
   jwt: {
-    secret: process.env.JWT_SECRET,
-    refresh_secret: process.env.JWT_REFRESH_SECRET,
-    secret_expires: process.env.JWT_EXPIRES_IN,
-    refresh_secret_expires: process.env.JWT_REFRESH_EXPIRES_IN,
+    accessTokon_secret: process.env.JWT_SECRET,
+    refreshToken_secret: process.env.JWT_REFRESH_SECRET,
+    accessTokon_secret_expires: process.env.JWT_EXPIRES_IN,
+    refreshToken_secret_expires: process.env.JWT_REFRESH_EXPIRES_IN,
   },
 };

@@ -43,7 +43,6 @@ const loginUser: RequestHandler = async (req, res, next) => {
   }
 };
 const getUser: RequestHandler = async (req, res, next) => {
-  // console.log("get mee hit");
   const accesstoken = req?.headers?.authorization;
   try {
     const result = await UserService.getUser(accesstoken as string);

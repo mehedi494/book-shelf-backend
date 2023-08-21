@@ -49,7 +49,7 @@ const getAllbooks = async (
   const whereConditon = andConditions.length > 0 ? { $and: andConditions } : {};
 
   const result = await Book.find(whereConditon).sort(sortCondition);
-  // console.log(result);
+
   /*   .skip(skip)
     .limit(limit)
    ; */
@@ -103,8 +103,6 @@ const addNewBook = async (accesstoken: string, payload: IBooks) => {
 };
 
 const deletBook = async (accesstoken: string, id: string) => {
-  // eslint-disable-next-line no-console
-  console.log(accesstoken, id);
   const verifieToken = jwtHelpers.verifyToken(
     accesstoken,
     config.jwt.accessTokon_secret as Secret
@@ -144,9 +142,6 @@ const updateBook = async (accesstoken: string, payload: Partial<IBooks>) => {
   }
 
   const book = await Book.findOne({ _id: payload._id });
-
-  //   console.log('book.userId', book?.userId);
-  //   console.log('verifieToken', verifieToken);
 
   if (!book?.userId) {
     throw new ApiError(
@@ -197,7 +192,7 @@ const postComment = async (accesstoken: string, payload: ICommentPayload) => {
     { _id: payload.bookId },
     updateOption,
     { new: true }
-  ).populate('users');
+  );
 
   return book;
 };

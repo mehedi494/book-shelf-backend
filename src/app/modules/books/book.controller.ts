@@ -40,8 +40,6 @@ const getSingleBook: RequestHandler = async (req, res, next) => {
 };
 
 const addNewBook: RequestHandler = async (req, res, next) => {
-  // eslint-disable-next-line no-console
-  console.log(req.body);
   const payload = req.body;
   const accesstoken = req?.headers?.authorization;
 

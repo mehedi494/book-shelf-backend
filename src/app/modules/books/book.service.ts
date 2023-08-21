@@ -1,9 +1,6 @@
-import { SortOrder } from 'mongoose';
 import { IGenericResponse } from '../../../interface/common';
-import { IPaginationOptions } from '../../../interface/paginationOption';
-import { paginationHelpers } from '../../../shared/paginationHelper';
 import { booksSearchableFields } from './book.constant';
-import { IBookFilters, IBooks } from './book.interface';
+import { IBookFilters, IBooks, ICommentPayload } from './book.interface';
 import { Book } from './book.model';
 import { JwtPayload, Secret } from 'jsonwebtoken';
 import { jwtHelpers } from '../../../helper/jwtHelper';
@@ -11,6 +8,9 @@ import config from '../../../config';
 import { User } from '../users/user.model';
 import ApiError from '../../../errors/apiError';
 import httpStatus from 'http-status';
+import { paginationHelpers } from '../../../shared/paginationHelper';
+import { IPaginationOptions } from '../../../interface/paginationOption';
+import { SortOrder } from 'mongoose';
 
 const getAllbooks = async (
   filters: IBookFilters,
@@ -38,7 +38,7 @@ const getAllbooks = async (
     });
   }
 
-  const { page, skip, limit, sortBy, sortOrder } =
+  const { page, sortBy, sortOrder } =
     paginationHelpers.calculatePagination(paginationOptions);
 
   const sortCondition: { [key: string]: SortOrder } = {};
@@ -47,20 +47,25 @@ const getAllbooks = async (
   }
 
   const whereConditon = andConditions.length > 0 ? { $and: andConditions } : {};
-  const result = await Book.find(whereConditon)
-    .skip(skip)
+
+  const result = await Book.find(whereConditon).sort(sortCondition);
+  // console.log(result);
+  /*   .skip(skip)
     .limit(limit)
-    .sort(sortCondition);
+   ; */
   const total = result.length;
 
   return {
     meta: {
       page,
-      limit,
       total,
     },
     data: result,
   };
+};
+const getSingleBook = async (id: string): Promise<IBooks | null> => {
+  const result = await Book.findById(id);
+  return result;
 };
 
 const addNewBook = async (accesstoken: string, payload: IBooks) => {
@@ -98,6 +103,8 @@ const addNewBook = async (accesstoken: string, payload: IBooks) => {
 };
 
 const deletBook = async (accesstoken: string, id: string) => {
+  // eslint-disable-next-line no-console
+  console.log(accesstoken, id);
   const verifieToken = jwtHelpers.verifyToken(
     accesstoken,
     config.jwt.accessTokon_secret as Secret
@@ -113,9 +120,8 @@ const deletBook = async (accesstoken: string, id: string) => {
   }
 
   const book = await Book.findById(id);
-
   if (!book?.userId) {
-    throw new ApiError(httpStatus.BAD_GATEWAY, 'UserId not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'UserId not found');
   }
 
   if (verifieToken._id !== book?.userId.toString()) {
@@ -134,10 +140,7 @@ const updateBook = async (accesstoken: string, payload: Partial<IBooks>) => {
   const isUserExist = await User.isUserExist(verifieToken.email);
 
   if (!isUserExist) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      'unauthorized please log in again'
-    );
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
 
   const book = await Book.findOne({ _id: payload._id });
@@ -146,7 +149,10 @@ const updateBook = async (accesstoken: string, payload: Partial<IBooks>) => {
   //   console.log('verifieToken', verifieToken);
 
   if (!book?.userId) {
-    throw new ApiError(httpStatus.BAD_GATEWAY, 'UserId not found');
+    throw new ApiError(
+      httpStatus.BAD_GATEWAY,
+      'no books found with this userId'
+    );
   }
 
   if (verifieToken._id !== book?.userId.toString()) {
@@ -163,14 +169,44 @@ const updateBook = async (accesstoken: string, payload: Partial<IBooks>) => {
     },
   };
 
-  return await Book.findOneAndUpdate({ _id: payload._id }, update, {
-    new: true,
-  });
+  return await Book.findOneAndUpdate({ _id: payload._id }, update);
+};
+
+const postComment = async (accesstoken: string, payload: ICommentPayload) => {
+  const verifieToken = jwtHelpers.verifyToken(
+    accesstoken,
+    config.jwt.accessTokon_secret as Secret
+  ) as JwtPayload;
+
+  const isUserExist = await User.isUserExist(verifieToken.email);
+
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'unauthorized, pleaase log in');
+  }
+
+  const updateOption = {
+    $push: {
+      reviews: {
+        userId: verifieToken._id,
+        comment: payload.comment,
+      },
+    },
+  };
+
+  const book = await Book.findOneAndUpdate(
+    { _id: payload.bookId },
+    updateOption,
+    { new: true }
+  ).populate('users');
+
+  return book;
 };
 
 export const BookService = {
   getAllbooks,
+  getSingleBook,
   addNewBook,
   deletBook,
   updateBook,
+  postComment,
 };

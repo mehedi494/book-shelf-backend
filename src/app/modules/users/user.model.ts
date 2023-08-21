@@ -10,9 +10,6 @@ import config from '../../../config';
 // statics method er jonno
 const userSchema = new Schema<IUser, IStaticsMethods>(
   {
-    id: {
-      type: String,
-    },
     name: {
       type: String,
       required: true,

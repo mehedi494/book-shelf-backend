@@ -7,8 +7,8 @@ import { booksFilterbableFields } from './book.constant';
 import { paginationFields } from '../../../constants/pagination';
 
 const getAllbooks: RequestHandler = async (req, res, next) => {
-  const filter = await pick(req.query, booksFilterbableFields);
-  const paginationOptions = await pick(req.query, paginationFields);
+  const filter = pick(req.query, booksFilterbableFields);
+  const paginationOptions = pick(req.query, paginationFields);
   try {
     const result = await BookService.getAllbooks(filter, paginationOptions);
 
@@ -22,7 +22,26 @@ const getAllbooks: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+const getSingleBook: RequestHandler = async (req, res, next) => {
+  const id = req.params.id;
+
+  try {
+    const result = await BookService.getSingleBook(id);
+
+    sendResponse(res, {
+      success: true,
+      message: 'single book retrive success',
+      statusCode: httpStatus.OK,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const addNewBook: RequestHandler = async (req, res, next) => {
+  // eslint-disable-next-line no-console
+  console.log(req.body);
   const payload = req.body;
   const accesstoken = req?.headers?.authorization;
 
@@ -58,12 +77,33 @@ const deletBook: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
 const updateBook: RequestHandler = async (req, res, next) => {
   const payload = req.body;
   const accesstoken = req?.headers?.authorization;
 
   try {
     const result = await BookService.updateBook(accesstoken as string, payload);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Comment added successfull',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const postComment: RequestHandler = async (req, res, next) => {
+  const payload = req.body;
+  const accesstoken = req?.headers?.authorization;
+
+  try {
+    const result = await BookService.postComment(
+      accesstoken as string,
+      payload
+    );
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -74,4 +114,12 @@ const updateBook: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-export const bookContoller = { getAllbooks, addNewBook, updateBook, deletBook };
+
+export const bookContoller = {
+  getAllbooks,
+  getSingleBook,
+  addNewBook,
+  updateBook,
+  deletBook,
+  postComment,
+};

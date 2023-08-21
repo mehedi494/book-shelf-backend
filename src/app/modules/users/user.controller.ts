@@ -7,13 +7,13 @@ import config from '../../../config';
 const createUser: RequestHandler = async (req, res, next) => {
   const data = req.body;
   try {
-    const result = await UserService.userCreate(data);
+    await UserService.userCreate(data);
 
     sendResponse(res, {
       success: true,
       message: 'user created Successfull',
       statusCode: httpStatus.OK,
-      data: result,
+      data: 'Please log in ',
     });
   } catch (error) {
     next(error);
@@ -42,8 +42,27 @@ const loginUser: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+const getUser: RequestHandler = async (req, res, next) => {
+  // console.log("get mee hit");
+  const accesstoken = req?.headers?.authorization;
+  try {
+    const result = await UserService.getUser(accesstoken as string);
+
+    // set refresh token in cookie
+
+    sendResponse(res, {
+      success: true,
+      message: 'user retrive Successfull',
+      statusCode: httpStatus.OK,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const UserController = {
   createUser,
   loginUser,
+  getUser,
 };
